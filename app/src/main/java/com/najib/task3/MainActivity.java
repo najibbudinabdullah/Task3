@@ -25,43 +25,54 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
     EditText username, password;
     Button login;
-    TextView link,lbl_http_connection;
+    TextView link, lbl_http_connection;
     HttpURLConnection connection;
     BufferedReader reader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences get_shared_preference = getSharedPreferences("authentication", MODE_PRIVATE);
-        if(get_shared_preference.getString("token_authentication", "") == null) {
+        if (get_shared_preference.getString("token_authentication", "").equals("")) {
+
+        } else {
             Intent intent_obj = new Intent(this, AdminActivity.class);
             startActivity(intent_obj);
+            this.finish();
         }
 
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_main);
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-            username = (EditText) findViewById(R.id.editText);
-            password = (EditText) findViewById(R.id.editText2);
-            link = (TextView) findViewById(R.id.textView);
-            lbl_http_connection = (TextView) findViewById(R.id.lbl_http_connection);
+        username = (EditText) findViewById(R.id.editText);
+        password = (EditText) findViewById(R.id.editText2);
+        link = (TextView) findViewById(R.id.textView);
+        lbl_http_connection = (TextView) findViewById(R.id.lbl_http_connection);
 
-            login = (Button) findViewById(R.id.button);
+        login = (Button) findViewById(R.id.button);
 
-            login.setOnClickListener(new View.OnClickListener() {
+        login.setOnClickListener(new View.OnClickListener() {
 
-                @Override
+            @Override
 
-                public void onClick(View v) {
-                    //localhost or 127.0.0.1 , is refer to emulator device it self
-                    // use 10.0.2.2, for access local server
-                    new ApiConnect().execute("http://private-eaf5da-users170.apiary-mock.com/users");
-                    //new ApiConnect().execute("http://10.0.2.2:3000/");
-                }
+            public void onClick(View v) {
+                //localhost or 127.0.0.1 , is refer to emulator device it self
+                // use 10.0.2.2, for access local server
+                new ApiConnect().execute("http://private-eaf5da-users170.apiary-mock.com/users");
+                //new ApiConnect().execute("http://10.0.2.2:3000/");
+            }
 
-            });
+        });
+
+        link.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                daftar_intent();
+            }
+
+        });
     }
 
     //this method for handle http connection
@@ -84,9 +95,9 @@ public class MainActivity extends AppCompatActivity{
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if(connection != null) connection.disconnect();
+            if (connection != null) connection.disconnect();
             try {
-                if(reader != null) reader.close();
+                if (reader != null) reader.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -100,24 +111,26 @@ public class MainActivity extends AppCompatActivity{
             JSONObject api_json = new JSONObject(json_str);
             JSONArray users = api_json.getJSONArray("users");
             boolean aya = false;
-            for(int i=0; i<users.length(); i++) {
+            for (int i = 0; i < users.length(); i++) {
                 JSONObject user = users.getJSONObject(i);
-                if(user.getString("password").equals(password.getText().toString()) && user.getString("email").equals(username.getText().toString())){
+                if (user.getString("password").equals(password.getText().toString()) && user.getString("email").equals(username.getText().toString())) {
                     Intent intent_obj = new Intent(this, AdminActivity.class);
                     startActivity(intent_obj);
 
                     SharedPreferences set_shared_preference = getSharedPreferences("authentication", MODE_PRIVATE);
                     SharedPreferences.Editor sp_editor = set_shared_preference.edit();
                     sp_editor.putString("token_authentication", user.getString("token_auth"));
+                    sp_editor.putString("nama", user.getString("name"));
                     sp_editor.commit();
 
-                    Log.e("Log","Login Sukses");
+                    Log.e("Log", "Login Sukses");
                     aya = true;
+                    this.finish();
                 }
-                Log.e("Log","Username1: "+username.getText().toString());
+                Log.e("Log", "Username1: " + username.getText().toString());
             }
-            if(aya == false){
-                Toast.makeText(getApplicationContext(),"Login gagal, sok cobaan deui..", Toast.LENGTH_SHORT).show();
+            if (aya == false) {
+                Toast.makeText(getApplicationContext(), "Login gagal, sok cobaan deui..", Toast.LENGTH_SHORT).show();
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -134,7 +147,7 @@ public class MainActivity extends AppCompatActivity{
         ProgressDialog progress_dialog = new ProgressDialog(MainActivity.this);
 
         @Override
-        protected void onPreExecute(){
+        protected void onPreExecute() {
             //unseen_dialog.setCancelable(false);
             //unseen_dialog.show();
             // this for init progress dialog
@@ -162,6 +175,11 @@ public class MainActivity extends AppCompatActivity{
                 e.printStackTrace();
             }
         }
+    }
+
+    public void daftar_intent() {
+        Intent intent_obj = new Intent(this, SignupActivity.class);
+        startActivity(intent_obj);
     }
 
 }
